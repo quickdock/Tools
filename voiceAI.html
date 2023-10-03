@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="./tools.css">
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C78TXR0XFK"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-C78TXR0XFK');
+</script>
+<script src="./GobalSettings.js"></script>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    .TXTFORAU {
+      position: relative;
+      transform: translate(-50%, -50%);
+      left: 50%;
+      top: 50%;
+      font-size: 30px;
+    }
+  </style>
+  <title>
+    Sound identifier | Sz Games</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.0.0/p5.min.js"></script>
+<script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+</head>
+<body>
+  <div id="TOPNAV" class="NAV" >
+    <a href="https://sz-games.github.io" aria-label="Home">  <img alt="Icon" fetchpriority="low" src="https://github.com/sz-games/home/blob/main/G.png?raw=true" style=" z-index: 7; position: relative; left: 10px; top: 5px; height: 40px; width: 40px;"> </a>
+    <div style="position: absolute; top: 0; width: fit-content;">
+      <h3 class="NAVTXT">Sound identifier</h3>
+      <p class="tag">AI</p>
+    </div>
+  </div>
+  <a style="text-decoration: none;" href="https://sz-games.github.io/">
+  <span onclick=""  class="material-icons"  style="position: absolute; background-color: #1d1d1dcf; padding: 2px; border-radius: 15px; z-index: 30; cursor: pointer;  font-size: 25px;  left: 10px; top: 70px;  color: white;  ">  
+    arrow_back
+</span>
+  </a>
+
+<button type="button" id="STARTBTN" style="cursor: pointer; z-index: 98; position: absolute; height: 45px; width: 100%; color: white; border: 3px solid gray; border-radius: 15px; background-color: rgb(28, 28, 28); position: relative;" onclick="init()">Start</button>
+<div id="label-container" style="height: 100%; width: 100%; position: fixed; text-align: center; background-color: black;"></div>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.4.0/dist/speech-commands.min.js"></script>
+
+<script type="text/javascript">
+    // more documentation available at
+    // https://github.com/tensorflow/tfjs-models/tree/master/speech-commands
+
+    // the link to your model provided by Teachable Machine export panel
+    const URL = "https://sz-games.github.io/Tools/";
+
+    async function createModel() {
+        const checkpointURL = URL + "model.json"; 
+        const metadataURL = URL + "metadata.json"; 
+
+        const recognizer = speechCommands.create(
+            "BROWSER_FFT", 
+            undefined, 
+            checkpointURL,
+            metadataURL);
+
+        await recognizer.ensureModelLoaded();
+
+        return recognizer;
+    }
+    function hide() {
+      document.getElementById('STARTBTN').style.display = 'none'
+
+    }
+    async function init() {
+        const recognizer = await createModel();
+        const classLabels = recognizer.wordLabels(); 
+        const labelContainer = document.getElementById("label-container");
+        for (let i = 0; i < classLabels.length; i++) {
+            labelContainer.appendChild(document.createElement("div"));
+        }
+        hide()
+       
+        recognizer.listen(result => {
+            const scores = result.scores; 
+            labelContainer.innerHTML = 'Listening...';
+
+            for (let i = 0; i < classLabels.length; i++) {
+                const classPrediction = classLabels[i] + ": " + result.scores[i].toFixed(2);
+                if (result.scores[i].toFixed(2) > 0.50) {
+                    const labelElement = document.createElement("div");
+                    labelElement.classList.add('TXTFORAU')
+                    labelElement.textContent = classLabels[i];
+                    labelContainer.appendChild(labelElement);
+                }
+                console.log(classLabels[i] + ':' + result.scores[i].toFixed(2))
+            }
+        }, {
+            includeSpectrogram: true, 
+            probabilityThreshold: 0.75,
+            invokeCallbackOnNoiseAndUnknown: true,
+            overlapFactor: 0.50 // probably want between 0.5 and 0.75. More info in README
+        });
+
+        // Stop the recognition in 5 seconds.
+        // setTimeout(() => recognizer.stopListening(), 5000);
+    }
+</script>
+
+</body>
+</html>
